@@ -43,13 +43,13 @@ def validateGlyph( glyph ):
             report += '- DUPLICATE UNICODE POINT'
             
         if report != '':
-            print >> log, ( '%s (%#0.2x) issues: %s' % (g.glyphname, glyph.unicode, report) )
+            print(('%s (%#0.2x) issues: %s' % (g.glyphname, glyph.unicode, report)), file=log)
     return report
  
 nargs = len(sys.argv)
 fontFileName = ''
 fontDir = ''
-outDir = 'out/';
+outDir = 'out/'
 if nargs != 2:
     fontFileName = 'November2.sfd'
     path =  fontFileName
@@ -69,7 +69,7 @@ fontName = os.path.splitext( os.path.basename(fontFileName) )[0]
 staffSpace = (font.em/4.)
  
 log = open( outDir+fontName.lower()+'.log', 'w+' )
-print >> log, ("\n# # # %s: checking data & generating metadata... # # #" % (fontFileName) )
+print(("\n# # # %s: checking data & generating metadata... # # #" % (fontFileName)), file=log)
 # generating OpenType font:
 #font.generate( outDir+fontName+'.otf', '', ('glyph-map-file', 'opentype') )
 fontVersion = font.version
@@ -114,8 +114,8 @@ lilypondData += '  TODO: LilyPond data header\n%}\n\n'
 lilypondData += '#(define '+fontName.lower()+' \'(\n'
 lilypondGlyphs = list()
  
-print >> log, ("  Generating unicode metadata..." )
-print >> log, ("  Generating LilyPond metadata..." )
+print(("  Generating unicode metadata..." ),file=log)
+print(("  Generating LilyPond metadata..." ),file=log)
  
 with open(fontFileName) as f:
     lines = f.readlines()
@@ -125,8 +125,8 @@ for anyLine in line_iter:
     line1 = anyLine.split()
     if len( line1 ) > 0 and line1[0] == 'StartChar:' :
         glyphName = line1[1]
-        line2 = line_iter.next().split()
-        line3 = line_iter.next().split()
+        line2 = line_iter.__next__().split()
+        line3 = line_iter.__next__().split()
         value = int(line2[2])
         if value != '-1' and value > 31:
             mainCodepoint = "%#06X" % value
@@ -156,9 +156,9 @@ metadata["glyphs"] = glyphs
 lilypondGlyphs.sort()
 lilypondData += '\n'.join(lilypondGlyphs) + '\n))\n'
  
-print >> log, ("  Generating bounding box metadata..." )
-print >> log, ("  Checking font..." )
-print >> log
+print(("  Generating bounding box metadata..." ),file=log)
+print(("  Checking font..." ),file=log)
+print(file=log)
 glyphBBoxes = dict()
 glyphsWithAnchors = dict()
 glyphAdvanceWidths = dict()
@@ -170,8 +170,8 @@ for glyph in font:
     if g.unicode != -1 and g.unicode > 31:
         count += 1
         validateGlyph( g )
-        g.addExtrema();
-        bbox = [round(bb/staffSpace, 4) for bb in g.boundingBox()];
+        g.addExtrema()
+        bbox = [round(bb/staffSpace, 4) for bb in g.boundingBox()]
         bBoxSW = (bbox[0], bbox[1])
         bBoxNE = (bbox[2], bbox[3])
         glyphBBoxes[g.glyphname] = {'bBoxNE':bBoxNE, 'bBoxSW':bBoxSW}
@@ -187,10 +187,10 @@ metadata["glyphBBoxes"] = glyphBBoxes
 metadata["glyphsWithAnchors"] = glyphsWithAnchors
 metadata["glyphAdvanceWidths"] = glyphAdvanceWidths
 font.close()
-print >> log, ( "\n%d defined glyphs processed (there are %d undefined glyphs)" % (count, undefCount-31) )
+print(( "\n%d defined glyphs processed (there are %d undefined glyphs)" % (count, undefCount-31) ),file=log)
 log.close()
 log = open( outDir+fontName.lower()+'.log', 'r' )
-print log.read()
+print(log.read())
  
 output = json.dumps( metadata, sort_keys = True, indent = 4, separators = (',', ': ') )
 jsonFileName = outDir + fontName.lower() + "_metadata.json"
